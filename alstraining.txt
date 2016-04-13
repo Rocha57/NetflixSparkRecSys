@@ -1,0 +1,22 @@
+A executar o ALS sobre o train_data com rank igual a 1 e numero de iteracoes 1
+RMSE: 3.39060383899
+
+A executar o ALS sobre o train_data com rank igual a 5 e numero de iteracoes 3
+First previsoes: ((1213, 856500), 3.8797064658763)                              
+First previsoes vs rating: ((886, 49878), (2.0, 2.744946376878211))             
+RMSE: 0.610237445431 
+
+A executar o ALS sobre o train_data com rank igual a 6 e numero de iteracoes 3
+First previsoes: ((1213, 856500), 4.26360707340172)                             
+First previsoes vs rating: ((886, 49878), (2.0, 3.4747911019904762))            
+RMSE: 0.565155133966 
+
+A executar o ALS sobre o train_data com rank igual a 7 e numero de iteracoes 3
+First previsoes: ((1213, 856500), 3.9521952477822557)                           
+First previsoes vs rating: ((886, 49878), (2.0, 2.57125425528049))              
+RMSE: 0.533509416867
+
+A executar o ALS sobre o train_data com rank igual a 8 e numero de iteracoes 3
+First previsoes: ((1213, 856500), 3.8407796151437443)                           
+First previsoes vs rating: ((886, 49878), (2.0, 2.6907374326199713))            
+RMSE: 0.51002803548
