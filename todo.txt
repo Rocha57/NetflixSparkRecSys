@@ -1,8 +1,4 @@
 TODO:
-Ver merdas por causa de todas as linhas do probe estarem contidas no training set, pode estar a fazer overfit e a influenciar o modelo;
-"The true values of the test ratings are unknown to us; for model building and
-parameter tuning, we exclude the probe dataset from the training dataset and
-use it for testing";
 Criar sistema de recomendação;
 	Parte 2, temos:
 		dividir dados e processamento pelas 3 máquinas do helpdesk ( instalar spark em cima de hadoop nas máquinas)
