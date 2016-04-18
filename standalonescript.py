@@ -29,43 +29,43 @@ def loadFiles(ratings_dir, limit):
 	return (ratings_rdd,probe_rdd,test_data)
 
 def trainModel(data,rank,num_iterations):
-	save_file = "models/rank"+rank+"iterations"+num_iterations
+	save_file = "models/rank"+str(rank)+"iterations"+str(num_iterations)
 	if isdir(save_file):
 		print("Model already exists, loading...")
 		model = MatrixFactorizationModel.load(sc, save_file)
 	else:
-		print("Model does not exist, training ALS")
+		print("Model does not exist, training ALS with rank "+str(rank)+" and "+str(num_iterations)+" iterations")
 		model = ALS.train(data, rank, num_iterations)
 		print("Saving new model")
 		model.save(sc,"save_file")
 	return model
 
-def computeRMSE(model, test_data, probe_rdd):
+def computeRMSE(model, test_data, real_data):
 	predictions = model.predictAll(test_data).map(lambda r: ((r[0], r[1]), r[2]))
-	probe_adaptado = probe_rdd.map(lambda r: ((r[0], r[1]), r[2]))
+	probe_adaptado = real_data.map(lambda r: ((r[0], r[1]), r[2]))
 	predictions_vs_ratings = probe_adaptado.join(predictions)
 	RMSE = sqrt(predictions_vs_ratings.map(lambda r:  (r[1][0] - r[1][1])**2).reduce(lambda x, y: x + y)/predictions_vs_ratings.count())
 	return RMSE
 
-def findBestModel(train_data, test_data, probe_rdd):
-	ranks = [4,8,12]
+def findBestModel(train_data, test_data, real_data):
+	ranks = [4,8,9,10,12]
 	num_iterations = 10
 	best_RMSE = float("inf")
 	best_rank = -1
 	best_num_iterations = -1
 	for rank in ranks:
 		model = trainModel(train_data,rank,num_iterations)
-		RMSE = computeRMSE(model, test_data, probe_rdd)
+		RMSE = computeRMSE(model, test_data, real_data)
 		if RMSE < best_RMSE:
 			best_RMSE = RMSE
 			best_rank = rank
 			best_num_iterations = num_iterations
 			best_model = model
-	print("Best model is with rank "+best_rank+" and "+num_iterations+" iterations with a RMSE = "+best_RMSE)
+	print("Best model is with rank "+str(best_rank)+" and "+str(num_iterations)+" iterations with a RMSE = "+str(best_RMSE))
 	return best_model
 
 
-if __name__ == __main__:
+if __name__ == "__main__":
 	sc = SparkContext("local", "main") #Standalone version
 	ratings_dir = "/Users/Rocha/Documents/Datasets/download/train1500"
 	limit = 1500 #if full training set = 17770, else the number of training files you're using
