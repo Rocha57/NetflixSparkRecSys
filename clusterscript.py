@@ -17,7 +17,7 @@ def parseProbe(x):
 	return [user_id,movie_id,rating] 
 
 def loadFiles(ratings_dir, limit):
-	ratings_file = sc.textFile(ratings_dir+"/mv_00[0-9]*")
+	ratings_file = sc.textFile(ratings_dir+"/mv_00[0-9]*.txt")
 	ratings_rdd = ratings_file.map(lambda line: line.split(','))
 	ratings_rdd = ratings_rdd.map(lambda x: parseRatings(x))
 	ratings_rdd = ratings_rdd.map(lambda x: (x[0], x[1], x[2]))
@@ -28,8 +28,8 @@ def loadFiles(ratings_dir, limit):
 	test_data = probe_rdd.map(lambda p: (p[0], p[1])) #using probe_rdd without the ratings, so we can predict them
 	return (ratings_rdd,probe_rdd,test_data)
 
-def trainModel(data,rank,num_iterations):
-	save_file = "models/rank"+str(rank)+"iterations"+str(num_iterations)
+def trainModel(limit,data,rank,num_iterations):
+	save_file = "models/"+str(limit)+"rank"+str(rank)+"iterations"+str(num_iterations)
 	if isdir(save_file):
 		print("Rank "+str(rank)+" and Iterations "+str(num_iterations)+" Model already exists, loading...")
 		model = MatrixFactorizationModel.load(sc, save_file)
@@ -64,7 +64,7 @@ def computeRMSE(model, test_data, real_data):
 	print("Accuracy: "+str(accuracy)+"%")
 	return (RMSE, predictions_vs_ratings)
 
-def findBestModel(train_data, test_data, real_data):
+def findBestModel(limit, train_data, test_data, real_data):
 	ranks = [4,5,6,7,9,11]
 	num_iterations = 5
 	best_RMSE = float("inf")
@@ -72,7 +72,7 @@ def findBestModel(train_data, test_data, real_data):
 	best_rank = -1
 	best_num_iterations = -1
 	for rank in ranks:
-		model = trainModel(train_data,rank,num_iterations)
+		model = trainModel(limit,train_data,rank,num_iterations)
 		RMSE, predictions_vs_ratings = computeRMSE(model, test_data, real_data)
 		if RMSE > previous_RMSE:
 			best_RMSE = previous_RMSE
@@ -90,11 +90,14 @@ def findBestModel(train_data, test_data, real_data):
 
 
 if __name__ == "__main__":
-	sc = SparkContext("local", "main") #Standalone version
-	ratings_dir = "/Users/Rocha/Documents/Datasets/download/train1500" #Standalone version, 1500 training movie files
+	#sc = SparkContext("local", "main") #Standalone version
+	sc = SparkContext("yarn-cluster", "main") #Scalable, Cluster version
+	#ratings_dir = "/Users/Rocha/Documents/Datasets/download/train1500" #Standalone version, 1500 training movie files
 	#ratings_dir = "/Users/Rocha/Documents/Datasets/download/training_set" #Full training dataset to be used in scalable version
+	ratings_dir = "/user/hduser1/train1500" #1500 training movie files dataset
+	#ratings_dir = "/user/hduser1/data/training_set" #Full dataset
 	limit = 1500 #if full training set = 17770, else the number of training files you're using
 	ratings_rdd,probe_rdd,test_data = loadFiles(ratings_dir,limit)
-	model, predictions_vs_ratings_rdd = findBestModel(ratings_rdd, test_data, probe_rdd)
+	model, predictions_vs_ratings_rdd = findBestModel(limit,ratings_rdd, test_data, probe_rdd)
 
 	sc.stop()

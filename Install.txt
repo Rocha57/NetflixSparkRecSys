@@ -1,0 +1,77 @@
+Installing Hadoop 2.6.4 on Ubuntu 14.04.4 (Test with 2 local VM's)
+
+Follow this tutorial to install a single-node cluster on every machine
+http://www.bogotobogo.com/Hadoop/BigData_hadoop_Install_on_ubuntu_single_node_cluster.php
+
+I used this mirror: http://www-eu.apache.org/dist/hadoop/common/hadoop-2.6.4/hadoop-2.6.4.tar.gz 
+
+The FEUP mirror has a damaged file, maybe, I guess
+
+DISABLE FIREWALL ON BOTH MACHINES:
+sudo ufw disable
+sudo iptables -F
+
+Follow this tutorial to multi-node cluster (be careful with some things for hadoop 2.6.4):
+http://doctuts.readthedocs.org/en/latest/hadoop.html#running-hadoop-on-ubuntu-linux-multi-node-cluster
+
+On the configuration step, hadoop 2.6.4 does not have a conf folder, instead go to /usr/local/hadoop/etc/hadoop
+
+run these commands if datanode does not initialize on master, slave or both: 
+sudo rm -r /usr/local/hadoop_store/hdfs/datanode/current
+hadoop namenode -format
+
+Installing Spark over Hadoop 2.6.4
+
+Follow this tutorial to install spark on every machine
+https://chongyaorobin.wordpress.com/2015/07/01/step-by-step-of-installing-apache-spark-on-apache-hadoop/
+
+Use this link instead of the one on the tutorial: http://mirrors.fe.up.pt/pub/apache/spark/spark-1.6.0/spark-1.6.0-bin-hadoop2.6.tgz 
+
+Open spark-env.sh
+add line 
+export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop
+
+some changes on /usr/local/hadoop/etc/hadoop/yarn-site.xml
+
+<configuration>
+ <property>
+  <name>yarn.resourcemanager.hostname</name>
+  <value>master</value>
+ </property>
+
+ <property>
+  <name>yarn.resourcemanager.address</name>
+  <value>master:8032</value>
+ </property>
+
+ <property>
+  <name>yarn.resourcemanager.scheduler.address</name>
+  <value>master:8030</value>
+ </property>
+
+ <property>
+  <name>yarn.resourcemanager.resource-tracker.address</name>
+  <value>master:8031</value>
+ </property>
+</configuration>
+
+BOTH MACHINES:
+Add file dfs.hosts in /usr/local/hadoop/etc/hadoop with content:
+master
+slave1
+
+Add this to mapred-site.xml
+<property>
+  <name>dfs.hosts</name>
+  <value>/usr/local/hadoop/etc/hadoop/dfs.hosts</value>
+</property>
+
+Restart all hadoop services, run these commands again, if needed:
+sudo rm -r /usr/local/hadoop_store/hdfs/datanode/current
+hadoop namenode -format
+
+On master, check if cluster is running and there are 2 datanodes alive: master and slave1
+
+hdfs dfsadmin -report
+
+Everything should be according to plan, I guess
